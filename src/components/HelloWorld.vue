@@ -1,58 +1,101 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="weather-app">
+    <h1>Weather App</h1>
+
+    <input v-model="city" placeholder="Enter city name" />
+    <button @click="fetchWeather" :disabled="loading">
+      {{ loading ? "Loading..." : "Get Weather" }}
+    </button>
+
+    <p v-if="error" style="color: red;">{{ error }}</p>
+
+    <div v-if="weatherData">
+      <h2>{{ weatherData.name }}</h2>
+      <p>Condition: {{ weatherData.weather[0].description }}</p>
+      <p>Temperature: {{ weatherData.main.temp }} °C</p>
+      <p>Humidity: {{ weatherData.main.humidity }}%</p>
+      <p>Wind Speed: {{ weatherData.wind.speed }} m/s</p>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+  data() {
+    return {
+      city: '',
+      weatherData: null,
+      error: '',
+      loading: false,
+      apiKey: '0fe35bb746f06263be4c158b6bdaf4b9'
+    };
+  },
+  methods: {
+    async fetchWeather() {
+      this.error = '';
+      this.weatherData = null;
+      this.loading = true;
+
+      if (!this.city) {
+        this.error = "Please enter a city name.";
+        this.loading = false;
+        return;
+      }
+
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${this.apiKey}&units=metric`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (response.ok) {
+          this.weatherData = data;
+        } else {
+          this.error = `API Error: ${data.message}`;
+        }
+      } catch (error) {
+        this.error = "Network error: " + error.message;
+        console.error(error);
+      } finally {
+        this.loading = false;
+      }
+    }
   }
-}
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.weather-app {
+  max-width: 400px;
+  margin: 50px auto;
+  text-align: center;
+  font-family: Arial, sans-serif;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+input {
+  padding: 10px;
+  width: 70%;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+
+button {
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
 }
-a {
-  color: #42b983;
+
+button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+h2 {
+  margin-top: 20px;
 }
 </style>
