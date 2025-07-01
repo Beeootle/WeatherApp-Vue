@@ -1,20 +1,35 @@
 <template>
-  <div class="weather-app" :class="weatherClass">
-    <h1>Weather App</h1>
+  <div class="weather-container" :class="weatherClass">
+    <div class="weather-box">
+      <h1 class="location">{{ weatherData?.name || "Enter a City" }}</h1>
+      <p class="condition">{{ weatherData?.weather[0].main || "" }}</p>
+      <p class="temperature">
+        {{ weatherData ? Math.round(weatherData.main.temp) + "°C" : "--°C" }}
+      </p>
 
-    <input v-model="city" placeholder="Enter city name" />
-    <button @click="fetchWeather" :disabled="loading">
-      {{ loading ? "Loading..." : "Get Weather" }}
-    </button>
+      <div class="details" v-if="weatherData">
+        <div class="detail-row">
+          <span>Humidity:</span>
+          <span>{{ weatherData.main.humidity }}%</span>
+        </div>
+        <div class="detail-row">
+          <span>Wind:</span>
+          <span>{{ weatherData.wind.speed }} m/s</span>
+        </div>
+        <div class="detail-row">
+          <span>Sunrise:</span>
+          <span>{{ formatTime(weatherData.sys.sunrise) }}</span>
+        </div>
+        <div class="detail-row">
+          <span>Sunset:</span>
+          <span>{{ formatTime(weatherData.sys.sunset) }}</span>
+        </div>
+      </div>
 
-    <p v-if="error" style="color: red;">{{ error }}</p>
-
-    <div v-if="weatherData">
-      <h2>{{ weatherData.name }}</h2>
-      <p>Condition: {{ weatherData.weather[0].description }}</p>
-      <p>Temperature: {{ weatherData.main.temp }} °C</p>
-      <p>Humidity: {{ weatherData.main.humidity }}%</p>
-      <p>Wind Speed: {{ weatherData.wind.speed }} m/s</p>
+      <div class="search">
+        <input v-model="city" placeholder="Enter city..." />
+        <button @click="fetchWeather">Search</button>
+      </div>
     </div>
   </div>
 </template>
@@ -25,144 +40,157 @@ export default {
     return {
       city: '',
       weatherData: null,
-      error: '',
-      loading: false,
       apiKey: '0fe35bb746f06263be4c158b6bdaf4b9'
     };
   },
   computed: {
     weatherClass() {
-      if (!this.weatherData) return '';
+      if (!this.weatherData) return 'default';
       const desc = this.weatherData.weather[0].description.toLowerCase();
-
       if (desc.includes('clear')) return 'sunny';
       if (desc.includes('cloud')) return 'cloudy';
-      if (desc.includes('rain')) return 'rainy';
-      if (desc.includes('drizzle')) return 'rainy';
-      if (desc.includes('thunderstorm') || desc.includes('storm')) return 'stormy';
+      if (desc.includes('rain') || desc.includes('drizzle')) return 'rainy';
       if (desc.includes('snow')) return 'snowy';
-      if (desc.includes('mist') || desc.includes('fog') || desc.includes('haze') || desc.includes('smoke')) return 'foggy';
-      if (desc.includes('dust') || desc.includes('sand') || desc.includes('ash')) return 'dusty';
-      if (desc.includes('tornado')) return 'tornado';
-      if (desc.includes('squall')) return 'windy';
-
-      return 'default-weather';
+      if (desc.includes('storm')) return 'stormy';
+      return 'default';
     }
   },
   methods: {
     async fetchWeather() {
-      this.error = '';
-      this.weatherData = null;
-      this.loading = true;
-
-      if (!this.city) {
-        this.error = "Please enter a city name.";
-        this.loading = false;
-        return;
-      }
-
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=0fe35bb746f06263be4c158b6bdaf4b9&units=metric`;
+      if (!this.city) return;
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${this.apiKey}&units=metric`;
 
       try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (response.ok) {
-          this.weatherData = data;
-        } else {
-          this.error = `API Error: ${data.message}`;
-        }
-      } catch (error) {
-        this.error = "Network error: " + error.message;
-        console.error(error);
-      } finally {
-        this.loading = false;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (res.ok) this.weatherData = data;
+        else alert('City not found.');
+      } catch (err) {
+        console.error('Error:', err);
       }
+    },
+    formatTime(unix) {
+      return new Date(unix * 1000).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
   }
 };
 </script>
 
 <style scoped>
-.weather-app {
-  max-width: 400px;
-  margin: 50px auto;
-  text-align: center;
-  font-family: Arial, sans-serif;
-  padding: 20px;
-  border-radius: 12px;
+.weather-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
   transition: background 0.5s ease;
-  color: #fff;
+  padding: Naivasha20px;
 }
 
-input {
-  padding: 10px;
-  width: 70%;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-button {
-  padding: 10px 20px;
-  cursor: pointer;
-  background-color: #4285f4;
+.weather-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
 }
 
-button:disabled {
-  background-color: #999;
-  cursor: not-allowed;
+.location {
+  font-size: 2rem;
+  margin-bottom: 10px;
 }
 
-h2 {
+.condition {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.temperature {
+  font-size: 4rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.details {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 1rem;
+}
+
+.search {
+  display: flex;
+  gap: 10px;
   margin-top: 20px;
 }
 
-.sunny {
-  background: linear-gradient(to top, #fceabb, #f8b500); 
+.search input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+}
+
+.search button {
+  background: #ffffff;
   color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s ease;
+}
+
+.search button:hover {
+  background: #ddd;
+}
+
+.sunny {
+  background-image: url(../assets/sunny.jpeg);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .cloudy {
-  background: linear-gradient(to top, #d7d2cc, #304352); 
+  background-image:url(../assets/cloudy.png) ;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .rainy {
-  background: linear-gradient(to top, #4b79a1, #283e51); 
+  background-image: url(../assets/rainy.png);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .snowy {
-  background: linear-gradient(to top, #e6dada, #274046); 
-  color: #333;
+  background-image: url(../assets/snowy.png);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .stormy {
-  background: linear-gradient(to top, #2c3e50, #000000); 
+  background-image: url(../assets/stormy.jpeg);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
-.foggy {
-  background: linear-gradient(to top, #bdc3c7, #2c3e50); 
-}
-
-.dusty {
-  background: linear-gradient(to top, #d1913c, #ffd194); 
-  color: #333;
-}
-
-.tornado {
-  background: linear-gradient(to top, #232526, #414345); 
-}
-
-.windy {
-  background: linear-gradient(to top, #83a4d4, #b6fbff); 
-  color: #333;
-}
-
-.default-weather {
-  background: #7f8c8d; 
+.default {
+  background: linear-gradient(to bottom, #1e3c72, #2a5298);
 }
 </style>
