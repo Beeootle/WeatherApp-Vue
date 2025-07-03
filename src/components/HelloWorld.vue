@@ -187,28 +187,28 @@ export default {
 }
 
 .sunny {
-  background-image: url(../assets/sunny.jpeg);
+  background-image: url(../assets/sunny.png);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
 }
 
 .cloudy {
-  background-image: url(../assets/cloudy.png);
+  background-image: url(../assets/cloudy.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
 }
 
 .rainy {
-  background-image: url(../assets/rainy.png);
+  background-image: url(../assets/rainy.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
 }
 
 .snowy {
-  background-image: url(../assets/snowy.png);
+  background-image: url(../assets/snowy.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
