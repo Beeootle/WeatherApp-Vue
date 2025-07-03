@@ -1,5 +1,7 @@
 <template>
   <div class="weather-container" :class="weatherClass">
+    <audio ref="weatherAudio" :src="weatherSound" autoplay loop></audio>
+
     <div class="weather-box">
       <h1 class="location">{{ weatherData?.name || "Enter a City" }}</h1>
       <p class="condition">{{ weatherData?.weather[0].main || "" }}</p>
@@ -40,7 +42,8 @@ export default {
     return {
       city: '',
       weatherData: null,
-      apiKey: '0fe35bb746f06263be4c158b6bdaf4b9'
+      apiKey: '0fe35bb746f06263be4c158b6bdaf4b9',
+      weatherSound: ''
     };
   },
   computed: {
@@ -51,8 +54,31 @@ export default {
       if (desc.includes('cloud')) return 'cloudy';
       if (desc.includes('rain') || desc.includes('drizzle')) return 'rainy';
       if (desc.includes('snow')) return 'snowy';
-      if (desc.includes('storm')) return 'stormy';
+      if (desc.includes('storm') || desc.includes('thunder')) return 'stormy';
       return 'default';
+    }
+  },
+  watch: {
+    weatherClass(newClass) {
+      const soundMap = {
+        sunny: require('@/assets/sunny.mp3'),
+        cloudy: require('@/assets/cloudy.mp3'),
+        rainy: require('@/assets/rain.mp3'),
+        snowy: require('@/assets/snow.mp3'),
+        stormy: require('@/assets/storm.mp3'),
+        default: ''
+      };
+
+      this.weatherSound = soundMap[newClass] || '';
+      this.$nextTick(() => {
+        const audio = this.$refs.weatherAudio;
+        if (audio) {
+          audio.pause();
+          audio.load();
+          audio.play().catch(() => {
+          });
+        }
+      });
     }
   },
   methods: {
@@ -87,7 +113,7 @@ export default {
   min-height: 100vh;
   font-family: 'Segoe UI', sans-serif;
   transition: background 0.5s ease;
-  padding: Naivasha20px;
+  padding: 20px;
 }
 
 .weather-box {
@@ -164,30 +190,35 @@ export default {
   background-image: url(../assets/sunny.jpeg);
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
 }
 
 .cloudy {
-  background-image:url(../assets/cloudy.png) ;
+  background-image: url(../assets/cloudy.png);
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
 }
 
 .rainy {
   background-image: url(../assets/rainy.png);
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
 }
 
 .snowy {
   background-image: url(../assets/snowy.png);
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
 }
 
 .stormy {
   background-image: url(../assets/stormy.jpeg);
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
 }
 
 .default {
