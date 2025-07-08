@@ -6,7 +6,7 @@
       <h1 class="location">{{ weatherData?.name || "Enter a City" }}</h1>
       <p class="condition">{{ weatherData?.weather[0].main || "" }}</p>
       <p class="temperature">
-        {{ weatherData ? Math.round(weatherData.main.temp) + "°C" : "--°C" }}
+        {{ weatherData ? Math.round(weatherData.main.temp) + "°C" : "- -°C" }}
       </p>
 
       <div class="details" v-if="weatherData">
@@ -194,7 +194,7 @@ export default {
 }
 
 .cloudy {
-  background-image: url(../assets/cloudy.jpg);
+  background-image: url(../assets/cloudy.png);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
